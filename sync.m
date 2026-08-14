@@ -20,16 +20,11 @@ file_sync = get_sync_points(dB_play, dB_pi, sr_spect, start_est);
 file_sync.pi_posix = file_sync.pi + fname2posix(audio_file);
 
 %% Add column of posix times to playback metadata table 
-% audio_rec_time + file_start -> posix
-% interp1: x=playback_file_time, y=posix, new_x=playback_meta_time
 play_info_path = fullfile(root_dir, 'happy_0.15_squeak_info.mat');
-play_info = load(play_info_path);
-play_info = cat(1, play_info.metadata.audio_chunk{:});
-row_dur = cumsum(play_info.usv_duration+play_info.background_duration);
-play_info.file_time = [0; row_dur(1:end-1)];
-
+play_info = load_play_info(play_info_path);
 play_info.posix = interp1(file_sync.play, file_sync.pi_posix, play_info.file_time, "linear", "extrap");
 
+%%
 function posix = fname2posix(fname)
     [~,t_str,~] = fileparts(fname);
     dt = datetime(t_str, "InputFormat","uuuuMMdd_HHmmss_SSSSSS");
