@@ -1,0 +1,51 @@
+function plot_around_chunk(play_info, gc, tm)
+    %% Get Chunk ON times
+    inds = find_chunk_inds(play_info.Type, 'USV');
+    chunk_time_usv = play_info.posix(inds);
+    
+    inds = find_chunk_inds(play_info.Type, 'background');
+    chunk_time_back = play_info.posix(inds);
+    
+    %% Histogram of chunk durations
+    figure(1); clf
+    subplot(2,1,1)
+    histogram(chunk_time_back-chunk_time_usv)
+    title('USV chunk')
+    xlabel('Duration (s)')
+    ylabel('Count')
+    
+    subplot(2,1,2)
+    histogram(chunk_time_usv(2:end)-chunk_time_back(1:end-1))
+    title('Background chunk')
+    xlabel('Duration (s)')
+    ylabel('Count')
+    %% Plot chunks of ON/OFF
+    pre_time = 20;
+    post_time = 20;
+    t = chunk_time_usv(2:4); % skip the first USV chunk as it doesn't have preceeding background
+    [fiber_usv, fiber_tm] = get_around_inds(gc, tm, t, pre_time, post_time);
+    %%
+    figure(1); clf; hold on
+    shadedErrorBar(fiber_tm, fiber_usv, {@mean, @nan_sem}, 'lineprops', {'Color', 'b'})
+    xline(0,'--k')
+    xlabel('Time after USV chunk start (s)')
+    %%
+    figure(2); clf; hold on
+    is_basline = fiber_tm<0;
+    y = zscore_subset(fiber_usv, is_basline);
+    shadedErrorBar(fiber_tm, y, {@mean, @nan_sem}, 'lineprops', {'Color', 'b'})
+    xline(0,'--k')
+    ylabel('Zscored dF/F')
+    xlabel('Time (s)')
+    xlabel('Time after USV chunk start (s)')
+
+end
+
+
+function inds = find_chunk_inds(data, pat)
+    inds = find(diff(data==pat) == 1)+1;
+
+    if data(1)==pat
+        inds = [1; inds];
+    end
+end
