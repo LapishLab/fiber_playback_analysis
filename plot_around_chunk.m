@@ -33,18 +33,13 @@ function plot_around_chunk(play_info, gc, tm, opt)
     [fiber_usv, fiber_tm] = get_around_inds(gc, tm, t, pre_time, post_time);
     %%
     figure(1); clf; hold on
-    if length(opt.chunk_inds)>1
-        shadedErrorBar(fiber_tm, fiber_usv, {@mean, @nan_sem}, 'lineprops', {'Color', 'b'})
-    else
-        plot(fiber_tm, fiber_usv, 'Color', 'b')
-    end
-    xline(0,'--k')
-    xlabel('Time after USV chunk start (s)')
-    %%
-    figure(2); clf; hold on
     is_basline = fiber_tm<0;
     y = zscore_subset(fiber_usv, is_basline);
-    shadedErrorBar(fiber_tm, y, {@mean, @nan_sem}, 'lineprops', {'Color', 'b'})
+    if length(opt.chunk_inds)>1
+        shadedErrorBar(fiber_tm, y, {@mean, @nan_sem}, 'lineprops', {'Color', 'b'})
+    else
+        plot(fiber_tm, y, 'Color', 'b')
+    end
     xline(0,'--k')
     ylabel('Zscored dF/F')
     xlabel('Time (s)')
