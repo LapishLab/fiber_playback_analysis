@@ -1,4 +1,10 @@
 function play_info = load_synced_play_info(playback_audio_path, session_dir, play_info_path)
+    %% Check if already computed
+    save_path = fullfile(session_dir,'play_info.mat');
+    if exist(save_path, "file")
+        load(save_path, "play_info")
+        return
+    end
     %% Load playback audio and compute spectrogram
     [audio_play, sr_play] = audioread(playback_audio_path);
     [dB_play,~,T_play] = get_spec(audio_play, sr_play);
@@ -19,6 +25,9 @@ function play_info = load_synced_play_info(playback_audio_path, session_dir, pla
     %% Add column of posix times to playback metadata table 
     play_info = load_play_info(play_info_path);
     play_info.posix = interp1(file_sync.play, file_sync.pi_posix, play_info.file_time, "linear", "extrap");
+
+    %% Save data to session folder
+    save(save_path, "play_info")
 end
 
 function posix = fname2posix(fname)
