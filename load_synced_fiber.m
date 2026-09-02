@@ -28,6 +28,16 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
         warning("Photo and Pi events have diffs greater than %d, something might not be matching up", warning_thresh)
     end
     
+    %% Get the stream data
+    gc = double(photoData.streams.x465A.data);
+    iso = double(photoData.streams.x415A.data);
+    fs_raw = photoData.streams.x465A.fs;
+
+    %% Downsample streams
+    fs = 40;
+    [gc,tm] = downsample_from_fs(gc, fs_raw, fs);
+    iso = downsample_from_fs(iso, fs_raw, fs);
+
     %% Trim bad data from the start of the streams
     figure(31); clf
     start = find_good_start(gc, fs);
@@ -38,13 +48,10 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
     tm = tm(start:end);
     
     %% Preprocess fiber signal
-    gc = photoData.streams.x465A.data;
-    iso = photoData.streams.x415A.data;
-    fs = photoData.streams.x465A.fs;
+    figure(32); clf
     [gc, iso] = preprocessFP_GCaMP(gc, iso, fs);
     
     %% Generate pi posix timestamps for fiber stream data
-    tm = linspace(0, numel(gc)/fs, numel(gc))';
     tm = interp1(photo_events.time, pi_events.posix, tm, "linear", "extrap");
 end
 
