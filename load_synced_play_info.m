@@ -16,7 +16,8 @@ function play_info = load_synced_play_info(playback_audio_path, session_dir, pla
     [dB_pi,~,~] = get_spec(audio_pi, sr_pi);
     
     %% Estimate offset by RMS
-    start_est = estimate_play_start(audio_pi, sr_pi);
+    start_est = estimate_play_start(dB_pi, sr_spect);
+    % start_est = 98
     
     %% Loop in chunks through playback spectrogram
     file_sync = get_sync_points(dB_play, dB_pi, sr_spect, start_est);
