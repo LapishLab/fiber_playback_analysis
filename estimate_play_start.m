@@ -1,23 +1,19 @@
-function start = estimate_play_start(audio_pi, sr_pi)
+function start = estimate_play_start(spect, sr)
     %restrict to first 10 minutes of audio
-    audio_pi = audio_pi(1:sr_pi*10*60);
+    spect = spect(:, 1:sr*10*60);
     
-    windowLength=10*sr_pi;
-    rms = sqrt(movmean(audio_pi.^2, windowLength));
+    windowLength=30*sr;
+    y = movmedian(mean(spect), windowLength);
     
-    dec_factor = floor(windowLength/10);
-    new_sr = sr_pi / dec_factor;
+    thresh = mean(prctile(y, [0,50]));
+    t = gen_time(numel(y), sr);
     
-    rms = rms(1:dec_factor:end);
-    thresh = mean(prctile(rms, [0,40]));
-    t = linspace(0, numel(rms)/new_sr, numel(rms));
-    
-    thresh_diff = diff(rms>thresh);
+    thresh_diff = diff(y>thresh);
     on_t = t(thresh_diff==1);
     start = on_t(end);
 
     clf; hold on
-    plot(t, rms)
+    plot(t, y)
     yline(thresh, '--')
     scatter(start, thresh, "*")
 end
