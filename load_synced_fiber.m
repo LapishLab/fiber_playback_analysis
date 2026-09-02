@@ -15,10 +15,11 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
     
     %% Drop extra pi or fiber events
     %Plot diffs to determine how things line up
-    clf; hold on
+    figure(30); clf; hold on
     plot(diff(pi_events.posix))
     plot(diff(photo_events.time))
-    
+    title ('Aligning pi and fiber events')
+
     min_l = min(height(pi_events), height(photo_events));
     pi_events = pi_events(1:min_l, :);
     photo_events = photo_events(1:min_l, :);
