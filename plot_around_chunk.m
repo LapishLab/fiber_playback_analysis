@@ -6,7 +6,11 @@ function plot_around_chunk(play_info, gc, tm, opt)
         opt.chunk_inds = 1
     end
     %% Get Chunk ON times
-    inds = find_chunk_inds(play_info.Type, 'USV');
+    if any('USV' == play_info.Type)
+        inds = find_chunk_inds(play_info.Type, 'USV');
+    else
+        inds = 1:500:height(play_info);
+    end
     chunk_time_usv = play_info.posix(inds);
         
     % %% Histogram of chunk durations
