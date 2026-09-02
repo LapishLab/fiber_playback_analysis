@@ -6,13 +6,25 @@ function play_info = load_synced_play_info(playback_audio_path, session_dir, pla
         return
     end
     %% Load playback audio and compute spectrogram
-    [audio_play, sr_play] = audioread(playback_audio_path);
-    [dB_play,~,T_play] = get_spec(audio_play, sr_play);
-    sr_spect = 1/diff(T_play(1:2));
+    precomputed_path = playback_audio_path + ".mat";
+    if exist(precomputed_path, "file")
+        load(precomputed_path, "dB_play", "sr_spect")
+    else
+        [audio_play, sr_play] = audioread(playback_audio_path);
+        [dB_play,~,T_play] = get_spec(audio_play, sr_play);
+        sr_spect = 1/diff(T_play(1:2));
+        save(precomputed_path, "sr_spect","dB_play")
+    end
     
     %% Load drift corrected Pi audio and compute spectrogram
-    audio_file = wildcard_path(fullfile(session_dir, 'pi-data*','fiber01','mic', '*.wav'));
-    [audio_pi, sr_pi] = load_corrected_audio(audio_file);
+    mic_dir = fullfile(session_dir, 'pi-data*','fiber01','mic');
+    audio_file = wildcard_path(fullfile(mic_dir, '*.wav'));
+    try
+        corr_file = wildcard_path(fullfile(mic_dir, '*corrected.wav'));
+        [audio_pi, sr_pi] = audioread(corr_file);
+    catch
+        [audio_pi, sr_pi] = load_corrected_audio(audio_file);
+    end
     [dB_pi,~,~] = get_spec(audio_pi, sr_pi);
     
     %% Estimate offset by RMS
