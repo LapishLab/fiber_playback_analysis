@@ -28,6 +28,15 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
         warning("Photo and Pi events have diffs greater than %d, something might not be matching up", warning_thresh)
     end
     
+    %% Trim bad data from the start of the streams
+    figure(31); clf
+    start = find_good_start(gc, fs);
+    title('Trimming start')
+    
+    gc = gc(start:end);
+    iso = iso(start:end);
+    tm = tm(start:end);
+    
     %% Preprocess fiber signal
     gc = photoData.streams.x465A.data;
     iso = photoData.streams.x415A.data;
@@ -37,4 +46,27 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
     %% Generate pi posix timestamps for fiber stream data
     tm = linspace(0, numel(gc)/fs, numel(gc))';
     tm = interp1(photo_events.time, pi_events.posix, tm, "linear", "extrap");
+end
+
+function ind = find_good_start(stream, fs)
+    max_cut = fs*60*5;
+    margin = fs*1;
+
+    smth_stream = movmean(stream, round(1*fs)); % smooth over 1 second
+    dev = movstd(smth_stream, round(5*fs)); % get std over 5 seconds
+    dev = movmean(dev, round(10*fs)); %Smooth std over 10 seconds   
+    
+    ind = find(dev(1:round(max_cut))>5);
+    if isempty(ind)
+        ind = 1;
+    else
+        ind = ind(end);
+    end
+    
+    ind = ind + round(margin);% jump forward by margin
+    
+    %plotting
+    tm = linspace(0, fs*numel(stream), numel(stream));
+    plot(tm, stream); hold on
+    scatter(tm(ind), stream(ind), '*r')
 end
