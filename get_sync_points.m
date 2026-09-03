@@ -20,6 +20,7 @@ function file_sync = get_sync_points(spect_play, spect_pi, sr, start_est)
     
         figure(2); clf;
         t_offset = peak_offset(play_seg, pi_seg, sr);
+        title(num2str(i))
         pause(0.1);
         file_sync.pi(i) = file_sync.play(i)+start_est-t_offset;
     end
