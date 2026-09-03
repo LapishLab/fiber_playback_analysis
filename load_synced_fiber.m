@@ -57,7 +57,7 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
 end
 
 function ind = find_good_start(stream, fs)
-    max_cut = fs*60*5;
+    max_cut = min(fs*60*5, numel(stream));
     margin = fs*1;
 
     smth_stream = movmean(stream, round(1*fs)); % smooth over 1 second
@@ -74,7 +74,7 @@ function ind = find_good_start(stream, fs)
     ind = ind + round(margin);% jump forward by margin
     
     %plotting
-    tm = linspace(0, fs*numel(stream), numel(stream));
+    tm = linspace(0, numel(stream)/fs, numel(stream));
     plot(tm, stream); hold on
     scatter(tm(ind), stream(ind), '*r')
 end
