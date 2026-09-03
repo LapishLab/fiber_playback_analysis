@@ -15,17 +15,42 @@ function [tm, gc, iso] = load_synced_fiber(session_dir)
     
     %% Drop extra pi or fiber events
     %Plot diffs to determine how things line up
-    figure(30); clf; hold on
+    figure(30); clf;
+    
+
+    nexttile; hold on
     plot(diff(pi_events.posix))
     plot(diff(photo_events.time))
-    title ('Aligning pi and fiber events')
+    xlabel('Event number')
+    ylabel('Time until next event (s)')
+    legend('Pi', 'Fiber')
+    title('before shift correction') 
 
-    min_l = min(height(pi_events), height(photo_events));
-    pi_events = pi_events(1:min_l, :);
-    photo_events = photo_events(1:min_l, :);
+    % Drop X number of sync points from both ends of the Pi sync to ensure
+    % we can align some good chunk
+    x = 5;
+    pi_events = pi_events(x:end-x, :);
+
+    dp = diff(pi_events.posix);
+    df = diff(photo_events.time);
+    [inds_p, inds_f] = shift_to_min_diff(dp,df);
+
+    % min_l = min(height(pi_events), height(photo_events));
+    pi_events = pi_events(inds_p, :);
+    photo_events = photo_events(inds_f, :);
+
+    nexttile; hold on
+    plot(diff(pi_events.posix))
+    plot(diff(photo_events.time))
+    legend('Pi', 'Fiber')
+    xlabel('Event number')
+    ylabel('Time until next event (s)')
+    title('after shift correction') 
+
+    sgtitle('Aligning pi and fiber events')
     
-    warning_thresh = 0.5;
-    if any(diff(pi_events.posix)-diff(photo_events.time) > warning_thresh)
+    warning_thresh = 0.09; % Max allowable difference between Pi and Fiber event intervals
+    if any(abs(diff(pi_events.posix)-diff(photo_events.time)) > warning_thresh)
         warning("Photo and Pi events have diffs greater than %d, something might not be matching up", warning_thresh)
     end
     
@@ -77,4 +102,30 @@ function ind = find_good_start(stream, fs)
     tm = linspace(0, numel(stream)/fs, numel(stream));
     plot(tm, stream); hold on
     scatter(tm(ind), stream(ind), '*r')
+end
+
+function [inds_a, inds_b] = shift_to_min_diff(a,b)
+    na = numel(a);
+    nb = numel(b);
+    if na == nb
+        inds_a = 1:na;
+        inds_b = 1:nb;
+    elseif na < nb
+        inds_a = 1:na;
+        inds_b = perform_shifts(a, b);
+    elseif nb < na
+        inds_b = 1:nb;
+        inds_a = perform_shifts(b, a);
+    end
+end
+
+function inds_stationary = perform_shifts(shift, stationary)
+    n_steps = numel(stationary) - numel(shift);
+    abs_diff = nan(n_steps,1);
+    
+    for i=1:n_steps
+        abs_diff(i) = sum(abs(stationary(i: i+numel(shift)-1) - shift));
+    end
+    [~, best_shift] = min(abs_diff);
+    inds_stationary = (1:numel(shift)) + best_shift - 1;
 end
