@@ -30,8 +30,8 @@ function plot_around_chunk(play_info, gc, tm, opt)
     % xlabel('Duration (s)')
     % ylabel('Count')
     %% Plot chunks of ON/OFF
-    pre_time = 20;
-    post_time = 20;
+    pre_time = 10;
+    post_time = 15;
     t = chunk_time_usv(opt.chunk_inds); % Which chunks to plot. Maybe not first since it doesn't have a preceeding background
 
     [fiber_usv, fiber_tm] = get_around_inds(gc, tm, t, pre_time, post_time);
