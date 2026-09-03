@@ -13,6 +13,9 @@ function file_sync = get_sync_points(spect_play, spect_pi, sr, start_est)
         play_seg = spect_play(:, seg_inds);
     
         seg_inds = seg_inds + round(start_est*sr);
+        if seg_inds(end) > width(spect_pi)
+            break
+        end
         pi_seg = spect_pi(:, seg_inds);
     
         figure(2); clf;
