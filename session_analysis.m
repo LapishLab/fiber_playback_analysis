@@ -16,34 +16,56 @@ ses_nm = "2026-08-06_13-50-10_NAc_dlight_rat2"; note = "Rat 2: P, male, DCZ (8/6
 % Cohort 2:
 % Rat 13, 15, 23 on 8/17 and 8/18
 ses_nm = "2026-08-18_09-15-32_NAc_dlight_rat13"; note = "Rat 13: P, female, saline (8/18)";
-ses_nm = "2026-08-18_10-26-09_NAc_dlight_rat15"; note = "Rat 15: W, female, DCZ (8/18)";
-ses_nm = "2026-08-18_14-44-09_NAc_dlight_rat23"; note = "Rat 23: W, female, saline (8/18)";
+% ses_nm = "2026-08-18_10-26-09_NAc_dlight_rat15"; note = "Rat 15: W, female, DCZ (8/18)";
+% ses_nm = "2026-08-18_14-44-09_NAc_dlight_rat23"; note = "Rat 23: W, female, saline (8/18)";
 
+
+% Cohort 3:
+% ses_nm = "2026-09-02_09-55-41_NAc_dlight_rat25";note = "Rat 25: P, female, saline (8/18)";
+% ses_nm = "2026-09-02_12-12-41_NAc_dlight_rat32";note = "Rat 32: W, female, saline (8/18)";
+
+
+% ses_nm = "2026-09-03_09-11-56_test_rat2";note = "sync test";
 %% Noise
 % play_info_path = fullfile(root_dir, 'noise_squeak_info.mat');
 % playback_audio_path = fullfile(root_dir, 'noise_NAc_dlight.wav');
 
 % Cohort 2:
 % Rat 13, 15, 23 on 8/17 and 8/18
-ses_nm = "2026-08-17_09-14-32_NAc_dlight_rat13"; note = "Rat 13: P, female, noise (8/17)";
-ses_nm = "2026-08-17_10-12-09_NAc_dlight_rat15"; note = "Rat 15: W, female, noise (8/17)";
-ses_nm = "2026-08-17_14-09-41_NAc_dlight_rat23"; note = "Rat 23: W, female, noise (8/17)";
+% ses_nm = "2026-08-17_09-14-32_NAc_dlight_rat13"; note = "Rat 13: P, female, noise (8/17)";
+% ses_nm = "2026-08-17_10-12-09_NAc_dlight_rat15"; note = "Rat 15: W, female, noise (8/17)";
+% ses_nm = "2026-08-17_14-09-41_NAc_dlight_rat23"; note = "Rat 23: W, female, noise (8/17)";
 
-ses_nm = "2026-08-26_09-05-52_NAc_dlight_rat13";
+% Cohort 3:
+% ses_nm = "2026-08-26_09-05-52_NAc_dlight_rat13";
+
 
 %%
 session_dir = fullfile(root_dir, "raw_data", ses_nm);
 %% Load the playback info file and synchronize to pi posix time using cross correlation of recorded and played files
-% play_info = load_synced_play_info(playback_audio_path, session_dir, play_info_path);
+play_info = load_synced_play_info(playback_audio_path, session_dir, play_info_path);
 
 %% Load the fiber data, and synchonize to pi posix time using TTL events
 [tm, gc, iso] = load_synced_fiber(session_dir);
 sgtitle(note);
 %%
-% plot_around_usv(play_info, gc, tm)
-% title(note)
+plot_around_usv(play_info, gc, tm)
+title(note)
 %%
-% plot_around_chunk(play_info, gc, tm, chunk_inds = 1)
-% title(note)
+plot_around_chunk(play_info, gc, tm, chunk_inds = 1:22)
+% plot_around_chunk(play_info, gc, tm)
+title(note)
 % 
+%%
+figure(99); clf; hold on
+
+plot(tm - tm(1), gc)
+y = max(gc);
+
+x = play_info.posix(play_info.Type == "USV") - tm(1);
+y = repmat(y, numel(x), 1);
+scatter(x,y, 'r.')
+ylabel('dF/F')
+xlabel('Time since "Good" start of fiber recording')
+legend('Dopamine', 'USV')
 
